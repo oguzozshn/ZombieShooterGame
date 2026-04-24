@@ -14,21 +14,26 @@ void main() {
     StdDraw.clear(StdDraw.WHITE);
     StdDraw.enableDoubleBuffering();
 
+    boolean gameRunning = true;
+    
+    while (gameRunning) {
+        gameRunning = runGame(canvasWidth, canvasHeight);
+    }
+}
+
+boolean runGame(int canvasWidth, int canvasHeight) {
     Chararacter oguz = new Chararacter();
     ArrayList<Zombie> zombies = new ArrayList<>();
-    zombies.add(new Zombie()); // İlk zombi
+    zombies.add(new Zombie());
     ArrayList<Bullet> bullets = new ArrayList<>();
 
     long gameStartTime = System.currentTimeMillis();
     long lastSpawnTime = gameStartTime;
-    int score = 0; // Score değişkeni
-    double spawnRate = 0.5; // Saniyede 0.5 zombi = her 2 saniyede 1 zombi
-
-    StdDraw.picture(oguz.getX(), oguz.getY(), "./wizard.png", 50, 50);
+    int score = 0;
+    double spawnRate = 0.5;
 
     int keyboardPauseDuration = 100;
-    boolean spacePressed = false; // Space basılı tutmayı önlemek için
-
+    boolean spacePressed = false;
 
     while (true) {
         if (StdDraw.isKeyPressed(KeyEvent.VK_LEFT)) {
@@ -36,7 +41,6 @@ void main() {
         }
         if (StdDraw.isKeyPressed(KeyEvent.VK_RIGHT)) {
             oguz.moveToRight();
-
         }
         if (StdDraw.isKeyPressed(KeyEvent.VK_UP)) {
             oguz.moveToUp();
@@ -44,7 +48,7 @@ void main() {
         if (StdDraw.isKeyPressed(KeyEvent.VK_DOWN)) {
             oguz.moveToDown();
         }
-        // Space tuşu ile ateş etme
+
         if (StdDraw.isKeyPressed(KeyEvent.VK_SPACE)) {
             if (!spacePressed) {
                 bullets.add(new Bullet(oguz.getX(), oguz.getY()));
@@ -54,28 +58,24 @@ void main() {
             spacePressed = false;
         }
 
-        // Spawn rate hesapla (her 10 saniyede bir 0.5 artar)
         long currentTime = System.currentTimeMillis();
         long elapsedSeconds = (currentTime - gameStartTime) / 1000;
-        spawnRate = 0.5 + (elapsedSeconds / 10) * 0.5; // Her 10 saniyede +0.5
+        spawnRate = 0.5 + (elapsedSeconds / 10) * 0.5;
 
-        // Zombi spawn kontrolü
         long timeSinceLastSpawn = currentTime - lastSpawnTime;
-        long spawnInterval = (long)(1000 / spawnRate); // Saniye cinsinden interval milisaniye'ye çevir
-
+        long spawnInterval = (long)(1000 / spawnRate);
+        
         if (timeSinceLastSpawn >= spawnInterval) {
             zombies.add(new Zombie());
             lastSpawnTime = currentTime;
         }
 
-        // Karakterin zombilere çarpması
         for (Zombie z : zombies) {
             if (isColliding(oguz, z)) {
                 oguz.loseHealth();
             }
         }
 
-        // Mermi kontrolü
         for (int i = 0; i < bullets.size(); i++) {
             Bullet b = bullets.get(i);
             b.move();
@@ -90,7 +90,7 @@ void main() {
                     j--;
                 }
             }
-
+            
             if (bulletHit) {
                 bullets.remove(i);
                 i--;
@@ -100,11 +100,10 @@ void main() {
             }
         }
 
-        // Zombi hareketi ve ekranı aşma kontrolü
         for (int i = 0; i < zombies.size(); i++) {
             Zombie z = zombies.get(i);
             z.move();
-
+            
             if (z.getY() < 0) {
                 score -= 200;
                 if (score < 0) score = 0;
@@ -118,26 +117,22 @@ void main() {
         drawMenu(gameStartTime, score, spawnRate);
 
         StdDraw.picture(oguz.getX(), oguz.getY(), "./wizard.png", 50, 50);
-
-        // Tüm zombileri çiz
+        
         for (Zombie z : zombies) {
             StdDraw.picture(z.getX(), z.getY(), z.getImagePath(), 50, 50);
         }
-
+        
         oguz.drawHealthBar();
 
-        // Mermi çiz
-        StdDraw.setPenColor(StdDraw.BLUE);
+        StdDraw.setPenColor(StdDraw.YELLOW);
         for (Bullet b : bullets) {
             StdDraw.filledCircle(b.getX(), b.getY(), 5);
         }
 
-        //oguz hitbox çizdiriyor
         StdDraw.setPenColor(StdDraw.RED);
         StdDraw.filledCircle(oguz.getTopLeftCornerX(), oguz.getTopLeftCornerY(), 3);
         StdDraw.filledCircle(oguz.getBottomRightCornerX(), oguz.getBottomRightCornerY(), 3);
 
-        //zombie hitbox çizdiriyor
         StdDraw.setPenColor(StdDraw.BLUE);
         for (Zombie z : zombies) {
             StdDraw.filledCircle(z.getTopLeftCornerX(), z.getTopLeftCornerY(), 3);
@@ -146,7 +141,70 @@ void main() {
 
         StdDraw.show();
         StdDraw.pause(30);
+
+        // Game Over kontrolü
+        if (oguz.getHealth() <= 0) {
+            long finalTime = (System.currentTimeMillis() - gameStartTime) / 1000;
+            return showGameOver(score, finalTime);
+        }
     }
+}
+
+boolean showGameOver(int finalScore, long finalTime) {
+    boolean waiting = true;
+    
+    while (waiting) {
+        StdDraw.clear(StdDraw.WHITE);
+        
+        // Game Over arka planı
+        StdDraw.setPenColor(new java.awt.Color(0, 0, 0, 150));
+        StdDraw.filledRectangle(300, 300, 300, 300);
+        
+        // Game Over yazısı
+        StdDraw.setPenColor(StdDraw.RED);
+        StdDraw.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 48));
+        StdDraw.text(300, 450, "GAME OVER");
+        
+        // Skorlar
+        StdDraw.setPenColor(StdDraw.WHITE);
+        StdDraw.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 24));
+        StdDraw.text(300, 370, "Score: " + finalScore);
+        StdDraw.text(300, 320, "Süre: " + finalTime + "s");
+        
+        // Retry butonu
+        drawRetryButton();
+        
+        StdDraw.show();
+        StdDraw.pause(30);
+        
+        // Mouse kontrolü
+        if (StdDraw.isMousePressed()) {
+            double mouseX = StdDraw.mouseX();
+            double mouseY = StdDraw.mouseY();
+            
+            // Retry butonunun alanı (x: 200-400, y: 200-250)
+            if (mouseX >= 200 && mouseX <= 400 && mouseY >= 200 && mouseY <= 250) {
+                return true; // Oyunu yeniden başlat
+            }
+        }
+    }
+    return false;
+}
+
+void drawRetryButton() {
+    // Buton arka planı
+    StdDraw.setPenColor(new java.awt.Color(0, 150, 0));
+    StdDraw.filledRectangle(300, 225, 100, 25);
+    
+    // Buton kenarlığı
+    StdDraw.setPenColor(StdDraw.WHITE);
+    StdDraw.setPenRadius(0.01);
+    StdDraw.rectangle(300, 225, 100, 25);
+    
+    // Buton yazısı
+    StdDraw.setPenColor(StdDraw.WHITE);
+    StdDraw.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 20));
+    StdDraw.text(300, 225, "RETRY");
 }
 
 boolean isColliding(Chararacter oguz, Zombie zombie) {
