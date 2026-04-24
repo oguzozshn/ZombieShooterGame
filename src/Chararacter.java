@@ -10,9 +10,11 @@ public class Chararacter {
     private static final long INVINCIBILITY_DURATION = 3000;
     private static final int MIN_X = 25; // hitboxWidth/2
     private static final int MAX_X = 575; // 600 - hitboxWidth/2
-    private static final int MIN_Y = 25; // hitboxHeight/2
-    private static final int MAX_Y = 545; // 600 - 55 (menü) - hitboxHeight/2
-
+    private static final int MIN_Y = 25;
+    private static final int MAX_Y = 545;
+    
+    // Mermi sistemi
+    private int ammo = 20;
 
     Chararacter(){
         speed = 5.0;
@@ -41,6 +43,24 @@ public class Chararacter {
 
     public int getHealth(){
         return health;
+    }
+
+    public int getAmmo(){
+        return ammo;
+    }
+
+    public void addAmmo(int amount) {
+        ammo += amount;
+    }
+
+    public boolean canShoot() {
+        return ammo > 0;
+    }
+
+    public void shoot() {
+        if (ammo > 0) {
+            ammo--;
+        }
     }
 
     public void moveToLeft(){
