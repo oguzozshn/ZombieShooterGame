@@ -16,6 +16,8 @@ void main() {
     Chararacter oguz = new Chararacter();
     Zombie zombie = new Zombie();
 
+    long gameStartTime = System.currentTimeMillis();
+
     StdDraw.picture(oguz.getX(), oguz.getY(), "./wizard.png", 50, 50);
     StdDraw.picture(zombie.getX(), zombie.getY(), zombie.getImagePath(), 50, 50);
 
@@ -35,13 +37,18 @@ void main() {
         if (StdDraw.isKeyPressed(KeyEvent.VK_DOWN)) {
             oguz.moveToDown();
         }
+
         if (isColliding(oguz, zombie)) {
-            System.out.println("Collision");
+            oguz.loseHealth();
         }
         zombie.move();
         StdDraw.clear(StdDraw.WHITE);
+
+        drawMenu(gameStartTime);
+
         StdDraw.picture(oguz.getX(), oguz.getY(), "./wizard.png", 50, 50);
         StdDraw.picture(zombie.getX(), zombie.getY(), zombie.getImagePath(), 50, 50);
+        oguz.drawHealthBar();
 
         //oguz hitbox çizdiriyor
         StdDraw.setPenColor(StdDraw.RED);
@@ -52,7 +59,6 @@ void main() {
         StdDraw.setPenColor(StdDraw.BLUE);
         StdDraw.filledCircle(zombie.getTopLeftCornerX(), zombie.getTopLeftCornerY(), 3);
         StdDraw.filledCircle(zombie.getBottomRightCornerX(), zombie.getBottomRightCornerY(), 3);
-
 
         StdDraw.show();
         StdDraw.pause(30);
@@ -68,4 +74,18 @@ boolean isColliding(Chararacter oguz, Zombie zombie) {
         return false;
     }
     return true;
+}
+
+void drawMenu(long gameStartTime) {
+    // Geçen zamanı hesapla (saniye cinsinden)
+    long elapsedTime = (System.currentTimeMillis() - gameStartTime) / 1000;
+
+    // Menü arka planı (ekranın tepesine kadar)
+    StdDraw.setPenColor(new java.awt.Color(50, 50, 50)); // Koyu gri
+    StdDraw.filledRectangle(300, 565, 300, 35); // Daha büyük ve aşağı
+
+    // Zamanı yazı olarak yazdır
+    StdDraw.setPenColor(StdDraw.WHITE);
+    StdDraw.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 16));
+    StdDraw.text(300, 565, "Geçen Süre: " + elapsedTime + "s");
 }
