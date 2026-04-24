@@ -8,8 +8,8 @@ public class Zombie {
     private String direction;
     private int hitboxWidth;
     private int hitboxHeight;
-
-    Random rand = new Random();
+    private Random rand = new Random();
+    private int randomDirection; // Rastgele yön için
 
     public Zombie(){
         speed = 1.0;
@@ -19,10 +19,13 @@ public class Zombie {
         direction = "right";
         hitboxWidth = 50;
         hitboxHeight = 50;
+        randomDirection = rand.nextInt(3) - 1;
     }
+    
     public int getX(){
         return x;
     }
+    
     public int getY(){
         return y;
     }
@@ -33,6 +36,20 @@ public class Zombie {
 
     public void move(){
         y -= speed;
+        
+        x += randomDirection;
+        
+        if (x < 0) {
+            x = 0;
+            randomDirection = 1;
+        } else if (x > 600) {
+            x = 600;
+            randomDirection = -1;
+        }
+        
+        if (rand.nextDouble() < 0.02) {
+            randomDirection = rand.nextInt(3) - 1;
+        }
     }
 
     public int getHitboxWidth() {

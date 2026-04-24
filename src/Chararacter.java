@@ -12,9 +12,10 @@ public class Chararacter {
     private static final int MAX_X = 575; // 600 - hitboxWidth/2
     private static final int MIN_Y = 25;
     private static final int MAX_Y = 545;
+    private static final int MAX_HEALTH = 3;
     
     // Mermi sistemi
-    private int ammo = 20;
+    private int ammo;
 
     Chararacter(){
         speed = 5.0;
@@ -24,6 +25,7 @@ public class Chararacter {
         health = 3;
         hitboxWidth = 50;
         hitboxHeight = 50;
+        ammo = 20;
     }
 
     public int getX(){
@@ -51,6 +53,13 @@ public class Chararacter {
 
     public void addAmmo(int amount) {
         ammo += amount;
+    }
+
+    public void addHealth(int amount) {
+        health += amount;
+        if (health > MAX_HEALTH) {
+            health = MAX_HEALTH; // Maksimum can üçü geçemesin
+        }
     }
 
     public boolean canShoot() {
@@ -116,20 +125,17 @@ public class Chararacter {
 
         if (health > 0) {
             health--;
-            lastDamageTime = currentTime; // Son hasar zamanını güncelle
+            lastDamageTime = currentTime;
         }
     }
 
     public void drawHealthBar() {
-        double startX = x - 30;  // Karakterin altında başla
-        double startY = y - 40;  // Karakterin 40 pixel altında
+        double startX = x - 30;
+        double startY = y - 40;
 
-        // Her can için bir kalp çiz
         for (int i = 0; i < health; i++) {
-            double heartX = startX + (i * 30);  // Her kalp 20 pixel aralıkla
+            double heartX = startX + (i * 30);
             StdDraw.picture(heartX, startY, "./heart.png", 15, 15);
         }
     }
-
-
 }

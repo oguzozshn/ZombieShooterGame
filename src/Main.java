@@ -28,10 +28,12 @@ boolean runGame(int canvasWidth, int canvasHeight) {
     zombies.add(new Zombie());
     ArrayList<Bullet> bullets = new ArrayList<>();
     ArrayList<AmmoBox> ammoBoxes = new ArrayList<>();
+    ArrayList<HealthBox> healthBoxes = new ArrayList<>();
 
     long gameStartTime = System.currentTimeMillis();
     long lastSpawnTime = gameStartTime;
     long lastAmmoSpawnTime = gameStartTime;
+    long lastHealthSpawnTime = gameStartTime;
     int score = 0;
     double spawnRate = 0.5;
 
@@ -76,12 +78,22 @@ boolean runGame(int canvasWidth, int canvasHeight) {
             lastSpawnTime = currentTime;
         }
 
-        // AmmoBox spawn (rastgele: ortalama her 5 saniyede bir)
+        // HealthBox spawn
+        long timeSinceLastHealthSpawn = currentTime - lastHealthSpawnTime;
+        if (timeSinceLastHealthSpawn >= 7000) {
+            if (rand.nextDouble() < 0.25) {
+                int randomX = rand.nextInt(550) + 25;
+                healthBoxes.add(new HealthBox(randomX, 500)); // 600 yerine 500 ile başlat
+            }
+            lastHealthSpawnTime = currentTime;
+        }
+
+        // AmmoBox spawn
         long timeSinceLastAmmoSpawn = currentTime - lastAmmoSpawnTime;
         if (timeSinceLastAmmoSpawn >= 5000) {
-            if (rand.nextDouble() < 0.3) { // %30 şans
-                int randomX = rand.nextInt(550) + 25; // 25-575 arasında
-                ammoBoxes.add(new AmmoBox(randomX, 600));
+            if (rand.nextDouble() < 0.3) {
+                int randomX = rand.nextInt(550) + 25;
+                ammoBoxes.add(new AmmoBox(randomX, 500)); // 600 yerine 500 ile başlat
             }
             lastAmmoSpawnTime = currentTime;
         }
@@ -99,6 +111,16 @@ boolean runGame(int canvasWidth, int canvasHeight) {
             if (isCollidingCharacterAmmoBox(oguz, box)) {
                 oguz.addAmmo(box.getAmmoAmount());
                 ammoBoxes.remove(i);
+                i--;
+            }
+        }
+
+        // Karakterin health boxlarına çarpması
+        for (int i = 0; i < healthBoxes.size(); i++) {
+            HealthBox box = healthBoxes.get(i);
+            if (isCollidingCharacterHealthBox(oguz, box)) {
+                oguz.addHealth(box.getHealthAmount());
+                healthBoxes.remove(i);
                 i--;
             }
         }
@@ -131,7 +153,6 @@ boolean runGame(int canvasWidth, int canvasHeight) {
         // AmmoBox hareketi
         for (int i = 0; i < ammoBoxes.size(); i++) {
             AmmoBox box = ammoBoxes.get(i);
-            box.move();
             if (box.isOffScreen()) {
                 ammoBoxes.remove(i);
                 i--;
@@ -142,7 +163,7 @@ boolean runGame(int canvasWidth, int canvasHeight) {
         for (int i = 0; i < zombies.size(); i++) {
             Zombie z = zombies.get(i);
             z.move();
-            
+
             if (z.getY() < 0) {
                 score -= 200;
                 if (score < 0) score = 0;
@@ -168,6 +189,15 @@ boolean runGame(int canvasWidth, int canvasHeight) {
             StdDraw.setPenColor(StdDraw.WHITE);
             StdDraw.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 12));
             StdDraw.text(box.getX(), box.getY(), "+");
+        }
+
+        // HealthBox çiz
+        for (HealthBox box : healthBoxes) {
+            StdDraw.setPenColor(StdDraw.RED);
+            StdDraw.filledSquare(box.getX(), box.getY(), 15);
+            StdDraw.setPenColor(StdDraw.WHITE);
+            StdDraw.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 14));
+            StdDraw.text(box.getX(), box.getY(), "❤");
         }
         
         oguz.drawHealthBar();
@@ -258,6 +288,17 @@ boolean isColliding(Chararacter oguz, Zombie zombie) {
 }
 
 boolean isCollidingCharacterAmmoBox(Chararacter oguz, AmmoBox box) {
+    if (oguz.getTopLeftCornerX() > box.getBottomRightCornerX() || box.getTopLeftCornerX() > oguz.getBottomRightCornerX()){
+        return false;
+    }
+
+    if (oguz.getBottomRightCornerY() > box.getTopLeftCornerY() || box.getBottomRightCornerY() > oguz.getTopLeftCornerY() ){
+        return false;
+    }
+    return true;
+}
+
+boolean isCollidingCharacterHealthBox(Chararacter oguz, HealthBox box) {
     if (oguz.getTopLeftCornerX() > box.getBottomRightCornerX() || box.getTopLeftCornerX() > oguz.getBottomRightCornerX()){
         return false;
     }

@@ -24,10 +24,6 @@ public class AmmoBox {
         return y;
     }
 
-    public void move() {
-        y -= speed;
-    }
-
     public boolean isOffScreen() {
         return y < 0;
     }
