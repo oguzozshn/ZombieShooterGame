@@ -8,7 +8,7 @@ public class Bullet {
     public Bullet(int startX, int startY) {
         x = startX;
         y = startY;
-        speed = 8.0;
+        speed = 12.0;
         hitboxWidth = 10;
         hitboxHeight = 10;
     }

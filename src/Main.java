@@ -83,7 +83,8 @@ boolean runGame(int canvasWidth, int canvasHeight) {
         if (timeSinceLastHealthSpawn >= 7000) {
             if (rand.nextDouble() < 0.25) {
                 int randomX = rand.nextInt(550) + 25;
-                healthBoxes.add(new HealthBox(randomX, 500)); // 600 yerine 500 ile başlat
+                int randomY = rand.nextInt(250) + 150; // 150-400 arası rastgele Y
+                healthBoxes.add(new HealthBox(randomX, randomY));
             }
             lastHealthSpawnTime = currentTime;
         }
@@ -93,7 +94,8 @@ boolean runGame(int canvasWidth, int canvasHeight) {
         if (timeSinceLastAmmoSpawn >= 5000) {
             if (rand.nextDouble() < 0.3) {
                 int randomX = rand.nextInt(550) + 25;
-                ammoBoxes.add(new AmmoBox(randomX, 500)); // 600 yerine 500 ile başlat
+                int randomY = rand.nextInt(250) + 150; // 150-400 arası rastgele Y
+                ammoBoxes.add(new AmmoBox(randomX, randomY));
             }
             lastAmmoSpawnTime = currentTime;
         }
@@ -202,7 +204,8 @@ boolean runGame(int canvasWidth, int canvasHeight) {
         
         oguz.drawHealthBar();
 
-        StdDraw.setPenColor(StdDraw.YELLOW);
+        //DrawBullet
+        StdDraw.setPenColor(StdDraw.BLUE);
         for (Bullet b : bullets) {
             StdDraw.filledCircle(b.getX(), b.getY(), 5);
         }
