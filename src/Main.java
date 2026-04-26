@@ -67,7 +67,7 @@ boolean runGame(int canvasWidth, int canvasHeight) {
 
         long currentTime = System.currentTimeMillis();
         long elapsedSeconds = (currentTime - gameStartTime) / 1000;
-        spawnRate = 0.5 + (elapsedSeconds / 10) * 0.5;
+        spawnRate = 0.5 + (elapsedSeconds / 15) * 0.3;
 
         // Zombie spawn
         long timeSinceLastSpawn = currentTime - lastSpawnTime;
@@ -80,10 +80,10 @@ boolean runGame(int canvasWidth, int canvasHeight) {
 
         // HealthBox spawn
         long timeSinceLastHealthSpawn = currentTime - lastHealthSpawnTime;
-        if (timeSinceLastHealthSpawn >= 7000) {
-            if (rand.nextDouble() < 0.25) {
+        if (timeSinceLastHealthSpawn >= 5000) { // 7000 -> 5000
+            if (rand.nextDouble() < 0.4) { // 0.25 -> 0.4 (%40 şans)
                 int randomX = rand.nextInt(550) + 25;
-                int randomY = rand.nextInt(250) + 150; // 150-400 arası rastgele Y
+                int randomY = rand.nextInt(250) + 150;
                 healthBoxes.add(new HealthBox(randomX, randomY));
             }
             lastHealthSpawnTime = currentTime;
@@ -91,10 +91,10 @@ boolean runGame(int canvasWidth, int canvasHeight) {
 
         // AmmoBox spawn
         long timeSinceLastAmmoSpawn = currentTime - lastAmmoSpawnTime;
-        if (timeSinceLastAmmoSpawn >= 5000) {
-            if (rand.nextDouble() < 0.3) {
+        if (timeSinceLastAmmoSpawn >= 4000) { // 5000 -> 4000
+            if (rand.nextDouble() < 0.45) { // 0.3 -> 0.45 (%45 şans)
                 int randomX = rand.nextInt(550) + 25;
-                int randomY = rand.nextInt(250) + 150; // 150-400 arası rastgele Y
+                int randomY = rand.nextInt(250) + 150;
                 ammoBoxes.add(new AmmoBox(randomX, randomY));
             }
             lastAmmoSpawnTime = currentTime;
@@ -137,7 +137,7 @@ boolean runGame(int canvasWidth, int canvasHeight) {
                 Zombie z = zombies.get(j);
                 if (isCollidingBulletZombie(b, z)) {
                     bulletHit = true;
-                    score += 50;
+                    score += 75; // 50 -> 75 (daha fazla ödül)
                     zombies.remove(j);
                     j--;
                 }
@@ -167,7 +167,7 @@ boolean runGame(int canvasWidth, int canvasHeight) {
             z.move();
 
             if (z.getY() < 0) {
-                score -= 200;
+                score -= 100; // 200 -> 100 (daha az ceza)
                 if (score < 0) score = 0;
                 zombies.remove(i);
                 i--;

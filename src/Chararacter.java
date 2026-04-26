@@ -12,7 +12,7 @@ public class Chararacter {
     private static final int MAX_X = 575; // 600 - hitboxWidth/2
     private static final int MIN_Y = 25;
     private static final int MAX_Y = 545;
-    private static final int MAX_HEALTH = 3;
+    private static final int MAX_HEALTH = 4;
     
     // Mermi sistemi
     private int ammo;
@@ -22,10 +22,10 @@ public class Chararacter {
         imagePath = "./wizard.png";
         x = 500;
         y = 500;
-        health = 3;
+        health = 4; // 3 -> 4 (biraz daha güvenlik)
         hitboxWidth = 50;
         hitboxHeight = 50;
-        ammo = 20;
+        ammo = 25; // 20 -> 25
     }
 
     public int getX(){
