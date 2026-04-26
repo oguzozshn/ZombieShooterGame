@@ -81,10 +81,6 @@ public class HealthBox {
      * Draws the health box on the canvas.
      */
     public void draw(){
-        StdDraw.setPenColor(StdDraw.RED);
-        StdDraw.filledSquare(this.getX(), this.getY(), 15);
-        StdDraw.setPenColor(StdDraw.WHITE);
-        StdDraw.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 14));
-        StdDraw.text(this.getX(), this.getY(), "❤");
+        StdDraw.picture(this.getX(), this.getY(), "./heart.png", 20, 20);
     }
 }

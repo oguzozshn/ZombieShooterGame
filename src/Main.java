@@ -25,7 +25,17 @@ void main() {
     }
 }
 
-
+/**
+ * Starts and runs the main game loop. This method manages game entities such as
+ * the character, zombies, bullets, ammo boxes, and health boxes. It handles user
+ * input, spawns game objects, updates their states, detects collisions, and renders
+ * the game scene.
+ *
+ * @param canvasWidth  the width of the game canvas in pixels
+ * @param canvasHeight the height of the game canvas in pixels
+ * @return true if the player chooses to restart the game after completing or losing;
+ * false if the player exits the game.
+ */
 boolean runGame(int canvasWidth, int canvasHeight) {
     Chararacter oguz = new Chararacter();
     ArrayList<Zombie> zombies = new ArrayList<>();
@@ -45,6 +55,7 @@ boolean runGame(int canvasWidth, int canvasHeight) {
     boolean spacePressed = false;
     Random rand = new Random();
 
+    // Game loop
     while (true) {
         if (StdDraw.isKeyPressed(KeyEvent.VK_LEFT)) {
             oguz.moveToLeft();
@@ -71,14 +82,20 @@ boolean runGame(int canvasWidth, int canvasHeight) {
 
         long currentTime = System.currentTimeMillis();
         long elapsedSeconds = (currentTime - gameStartTime) / 1000;
+        // Spawn rate increases gradually: starts at 0.5, increases by 0.3 every 15 seconds
         spawnRate = 0.5 + (elapsedSeconds / 15) * 0.3;
 
         // Zombie spawn
+        // Calculate the time elapsed since the last zombie spawn
         long timeSinceLastSpawn = currentTime - lastSpawnTime;
+        // Calculate the spawn interval based on the current spawn rate
         long spawnInterval = (long)(1000 / spawnRate);
 
+        // Check if enough time has passed to spawn a new zombie
         if (timeSinceLastSpawn >= spawnInterval) {
+            // Create and add a new zombie to the game
             zombies.add(new Zombie());
+            // Update the last spawn time to current time for next spawn calculation
             lastSpawnTime = currentTime;
         }
 
@@ -104,14 +121,14 @@ boolean runGame(int canvasWidth, int canvasHeight) {
             lastAmmoSpawnTime = currentTime;
         }
 
-        // Karakterin zombilere çarpması
+        // Character zombie collision
         for (Zombie z : zombies) {
             if (isCollidingCharacterZombie(oguz, z)) {
                 oguz.loseHealth();
             }
         }
 
-        // Karakterin ammo boxlarına çarpması
+        // Character ammo box collision
         for (int i = 0; i < ammoBoxes.size(); i++) {
             AmmoBox box = ammoBoxes.get(i);
             if (isCollidingCharacterAmmoBox(oguz, box)) {
@@ -121,7 +138,7 @@ boolean runGame(int canvasWidth, int canvasHeight) {
             }
         }
 
-        // Karakterin health boxlarına çarpması
+        // Character health box collision
         for (int i = 0; i < healthBoxes.size(); i++) {
             HealthBox box = healthBoxes.get(i);
             if (isCollidingCharacterHealthBox(oguz, box)) {
@@ -131,43 +148,46 @@ boolean runGame(int canvasWidth, int canvasHeight) {
             }
         }
 
-        // Mermi kontrolü
-        for (int i = 0; i < bullets.size(); i++) {
-            Bullet b = bullets.get(i);
-            b.move();
-
-            boolean bulletHit = false;
-            for (int j = 0; j < zombies.size(); j++) {
-                Zombie z = zombies.get(j);
-                if (isCollidingBulletZombie(b, z)) {
-                    bulletHit = true;
-                    score += 10;
-                    zombies.remove(j);
-                    j--;
-                }
-            }
-
-                // Mermi health box ile çarpışması kontrolü
-                for (int j = 0; j < healthBoxes.size(); j++) {
-                    HealthBox hb = healthBoxes.get(j);
-                    if (isCollidingBulletHealthBox(b, hb)) {
-                        bulletHit = true;
-                        healthBoxes.remove(j);
-                        j--;
-                        break;
-                    }
-                }
-
-            if (bulletHit) {
-                bullets.remove(i);
-                i--;
-            } else if (b.isOffScreen()) {
-                bullets.remove(i);
-                i--;
-            }
+// Iterate through all bullets and update their state
+for (int i = 0; i < bullets.size(); i++) {
+    Bullet b = bullets.get(i);
+    b.move(); // Move the bullet upward on the screen
+    
+    boolean bulletHit = false; // Flag to track if the bullet hit something
+    
+    // Check if the bullet collides with any zombie
+    for (int j = 0; j < zombies.size(); j++) {
+        Zombie z = zombies.get(j);
+        if (isCollidingBulletZombie(b, z)) {
+            bulletHit = true; // Mark that the bullet has hit a target
+            score += 10; // Increase player score
+            zombies.remove(j); // Remove the zombie from the game
+            j--; // Decrement index since we removed an element from the list
         }
+    }
+    
+    // Check if the bullet collides with any health box
+    for (int j = 0; j < healthBoxes.size(); j++) {
+        HealthBox hb = healthBoxes.get(j);
+        if (isCollidingBulletHealthBox(b, hb)) {
+            bulletHit = true; // Mark that the bullet has hit a target
+            healthBoxes.remove(j); // Remove the health box from the game
+            j--; // Decrement index since we removed an element from the list
+            break; // Exit loop since this bullet can only destroy one health box
+        }
+    }
+    
+    // Remove the bullet if it hit something or went off screen
+    if (bulletHit) {
+        bullets.remove(i); // Remove the bullet that hit a target
+        i--; // Decrement index since we removed an element from the list
+    } else if (b.isOffScreen()) {
+        bullets.remove(i); // Remove the bullet that left the screen
+        i--; // Decrement index since we removed an element from the list
+    }
+}
 
-        // AmmoBox hareketi
+        // AmmoBox movement
         for (int i = 0; i < ammoBoxes.size(); i++) {
             AmmoBox box = ammoBoxes.get(i);
             if (box.isOffScreen()) {
@@ -176,7 +196,7 @@ boolean runGame(int canvasWidth, int canvasHeight) {
             }
         }
 
-        // Zombie hareketi
+        // Zombie movement
         for (int i = 0; i < zombies.size(); i++) {
             Zombie z = zombies.get(i);
             z.move();
