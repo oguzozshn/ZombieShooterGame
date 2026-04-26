@@ -52,4 +52,9 @@ public class Bullet {
     public double getBottomRightCornerY() {
         return y - hitboxHeight / 2.0;
     }
+    
+    public void draw(){
+        StdDraw.setPenColor(StdDraw.BLUE);
+        StdDraw.filledCircle(this.getX(), this.getY(), 5);
+    }
 }

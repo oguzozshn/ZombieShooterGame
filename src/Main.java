@@ -4,6 +4,9 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Random;
 
+/**
+ * Main game loop and initialization.
+ */
 void main() {
     int canvasWidth = 600;
     int canvasHeight = 600;
@@ -21,6 +24,7 @@ void main() {
         gameRunning = runGame(canvasWidth, canvasHeight);
     }
 }
+
 
 boolean runGame(int canvasWidth, int canvasHeight) {
     Chararacter oguz = new Chararacter();
@@ -72,7 +76,7 @@ boolean runGame(int canvasWidth, int canvasHeight) {
         // Zombie spawn
         long timeSinceLastSpawn = currentTime - lastSpawnTime;
         long spawnInterval = (long)(1000 / spawnRate);
-        
+
         if (timeSinceLastSpawn >= spawnInterval) {
             zombies.add(new Zombie());
             lastSpawnTime = currentTime;
@@ -102,7 +106,7 @@ boolean runGame(int canvasWidth, int canvasHeight) {
 
         // Karakterin zombilere çarpması
         for (Zombie z : zombies) {
-            if (isColliding(oguz, z)) {
+            if (isCollidingCharacterZombie(oguz, z)) {
                 oguz.loseHealth();
             }
         }
@@ -137,12 +141,23 @@ boolean runGame(int canvasWidth, int canvasHeight) {
                 Zombie z = zombies.get(j);
                 if (isCollidingBulletZombie(b, z)) {
                     bulletHit = true;
-                    score += 75; // 50 -> 75 (daha fazla ödül)
+                    score += 10;
                     zombies.remove(j);
                     j--;
                 }
             }
-            
+
+                // Mermi health box ile çarpışması kontrolü
+                for (int j = 0; j < healthBoxes.size(); j++) {
+                    HealthBox hb = healthBoxes.get(j);
+                    if (isCollidingBulletHealthBox(b, hb)) {
+                        bulletHit = true;
+                        healthBoxes.remove(j);
+                        j--;
+                        break;
+                    }
+                }
+
             if (bulletHit) {
                 bullets.remove(i);
                 i--;
@@ -167,8 +182,7 @@ boolean runGame(int canvasWidth, int canvasHeight) {
             z.move();
 
             if (z.getY() < 0) {
-                score -= 100; // 200 -> 100 (daha az ceza)
-                if (score < 0) score = 0;
+                score -= 5;
                 zombies.remove(i);
                 i--;
             }
@@ -176,61 +190,52 @@ boolean runGame(int canvasWidth, int canvasHeight) {
 
         StdDraw.clear(StdDraw.WHITE);
 
-        drawMenu(gameStartTime, score, spawnRate, oguz.getAmmo());
+        //Draw Menu
+        drawMenu(gameStartTime, score, spawnRate, oguz.getAmmo(), oguz.getHealth());
 
-        StdDraw.picture(oguz.getX(), oguz.getY(), "./wizard.png", 50, 50);
-        
+        // Draw Oguz
+        oguz.draw();
+
+        // Draw Zombies
         for (Zombie z : zombies) {
-            StdDraw.picture(z.getX(), z.getY(), z.getImagePath(), 50, 50);
+            z.draw();
         }
-        
-        // AmmoBox çiz
+
+        // Draw AmmoBox
         for (AmmoBox box : ammoBoxes) {
-            StdDraw.setPenColor(StdDraw.ORANGE);
-            StdDraw.filledSquare(box.getX(), box.getY(), 15);
-            StdDraw.setPenColor(StdDraw.WHITE);
-            StdDraw.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 12));
-            StdDraw.text(box.getX(), box.getY(), "+");
+            box.draw();
         }
 
-        // HealthBox çiz
-        for (HealthBox box : healthBoxes) {
-            StdDraw.setPenColor(StdDraw.RED);
-            StdDraw.filledSquare(box.getX(), box.getY(), 15);
-            StdDraw.setPenColor(StdDraw.WHITE);
-            StdDraw.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 14));
-            StdDraw.text(box.getX(), box.getY(), "❤");
-        }
-        
-        oguz.drawHealthBar();
-
-        //DrawBullet
-        StdDraw.setPenColor(StdDraw.BLUE);
+        // Draw Bullets
         for (Bullet b : bullets) {
-            StdDraw.filledCircle(b.getX(), b.getY(), 5);
+            b.draw();
         }
 
-        StdDraw.setPenColor(StdDraw.RED);
-        StdDraw.filledCircle(oguz.getTopLeftCornerX(), oguz.getTopLeftCornerY(), 3);
-        StdDraw.filledCircle(oguz.getBottomRightCornerX(), oguz.getBottomRightCornerY(), 3);
-
-        StdDraw.setPenColor(StdDraw.BLUE);
-        for (Zombie z : zombies) {
-            StdDraw.filledCircle(z.getTopLeftCornerX(), z.getTopLeftCornerY(), 3);
-            StdDraw.filledCircle(z.getBottomRightCornerX(), z.getBottomRightCornerY(), 3);
+        //Draw HealthBox
+        for (HealthBox box : healthBoxes) {
+            box.draw();
         }
+
+        //Draw HealthBar
+        oguz.drawHealthBar();
 
         StdDraw.show();
         StdDraw.pause(30);
 
-        // Game Over kontrolü
+        // Game Over check
         if (oguz.getHealth() <= 0) {
             long finalTime = (System.currentTimeMillis() - gameStartTime) / 1000;
             return showGameOver(score, finalTime);
         }
     }
-}
+    }
 
+/**
+ * Displays the "Game Over" screen with the final score and time, and provides an option to retry the game.
+ * @param finalScore The final score achieved by the player.
+ * @param finalTime The total time played by the player in seconds.
+ * @return True if the player clicks the "Retry" button, false otherwise.
+ */
 boolean showGameOver(int finalScore, long finalTime) {
     boolean waiting = true;
     
@@ -266,6 +271,9 @@ boolean showGameOver(int finalScore, long finalTime) {
     return false;
 }
 
+/**
+ * Draws the retry button on the screen.
+ */
 void drawRetryButton() {
     StdDraw.setPenColor(new java.awt.Color(0, 150, 0));
     StdDraw.filledRectangle(300, 225, 100, 25);
@@ -279,7 +287,13 @@ void drawRetryButton() {
     StdDraw.text(300, 225, "RETRY");
 }
 
-boolean isColliding(Chararacter oguz, Zombie zombie) {
+/**
+ * Checks if a character collides with a zombie.
+ * @param oguz The character object.
+ * @param zombie The zombie object.
+ * @return True if collision occurs, false otherwise.
+ */
+boolean isCollidingCharacterZombie(Chararacter oguz, Zombie zombie) {
     if (oguz.getTopLeftCornerX() > zombie.getBottomRightCornerX() || zombie.getTopLeftCornerX() > oguz.getBottomRightCornerX()){
         return false;
     }
@@ -290,6 +304,12 @@ boolean isColliding(Chararacter oguz, Zombie zombie) {
     return true;
 }
 
+/**
+ * Checks if a character collides with an ammo box.
+ * @param oguz The character object.
+ * @param box The ammo box object.
+ * @return True if collision occurs, false otherwise.
+ */
 boolean isCollidingCharacterAmmoBox(Chararacter oguz, AmmoBox box) {
     if (oguz.getTopLeftCornerX() > box.getBottomRightCornerX() || box.getTopLeftCornerX() > oguz.getBottomRightCornerX()){
         return false;
@@ -301,6 +321,13 @@ boolean isCollidingCharacterAmmoBox(Chararacter oguz, AmmoBox box) {
     return true;
 }
 
+
+/**
+ * Checks if a character collides with a health box.
+ * @param oguz The character object.
+ * @param box The health box object.
+ * @return True if collision occurs, false otherwise.
+ */
 boolean isCollidingCharacterHealthBox(Chararacter oguz, HealthBox box) {
     if (oguz.getTopLeftCornerX() > box.getBottomRightCornerX() || box.getTopLeftCornerX() > oguz.getBottomRightCornerX()){
         return false;
@@ -312,6 +339,12 @@ boolean isCollidingCharacterHealthBox(Chararacter oguz, HealthBox box) {
     return true;
 }
 
+/**
+ * Checks if a bullet collides with a zombie.
+ * @param bullet The bullet object.
+ * @param zombie The zombie object.
+ * @return True if collision occurs, false otherwise.
+ */
 boolean isCollidingBulletZombie(Bullet bullet, Zombie zombie) {
     if (bullet.getTopLeftCornerX() > zombie.getBottomRightCornerX() || zombie.getTopLeftCornerX() > bullet.getBottomRightCornerX()){
         return false;
@@ -323,7 +356,30 @@ boolean isCollidingBulletZombie(Bullet bullet, Zombie zombie) {
     return true;
 }
 
-void drawMenu(long gameStartTime, int score, double spawnRate, int ammo) {
+    /**
+     * Checks if a bullet collides with a health box.
+     * @param bullet The bullet object.
+     * @param healthBox The health box object.
+     * @return True if collision occurs, false otherwise.
+     */
+    boolean isCollidingBulletHealthBox(Bullet bullet, HealthBox healthBox) {
+        if (bullet.getTopLeftCornerX() > healthBox.getBottomRightCornerX() || healthBox.getTopLeftCornerX() > bullet.getBottomRightCornerX()){
+            return false;
+        }
+
+        if (bullet.getBottomRightCornerY() > healthBox.getTopLeftCornerY() || healthBox.getBottomRightCornerY() > bullet.getTopLeftCornerY() ){
+            return false;
+        }
+        return true;
+    }
+/**
+ * Draws the game menu with score, time, ammo, and spawn rate information.
+ * @param gameStartTime The start time of the game in milliseconds.
+ * @param score The current score of the player.
+ * @param spawnRate The current spawn rate of zombies.
+ * @param ammo The current ammo count of the player.
+ */
+void drawMenu(long gameStartTime, int score, double spawnRate, int ammo, int health) {
     long elapsedTime = (System.currentTimeMillis() - gameStartTime) / 1000;
 
     StdDraw.setPenColor(new java.awt.Color(50, 50, 50));
@@ -331,8 +387,10 @@ void drawMenu(long gameStartTime, int score, double spawnRate, int ammo) {
 
     StdDraw.setPenColor(StdDraw.WHITE);
     StdDraw.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 14));
-    StdDraw.text(75, 565, "Süre: " + elapsedTime + "s");
-    StdDraw.text(250, 565, "Score: " + score);
-    StdDraw.text(400, 565, "Ammo: " + ammo);
-    StdDraw.text(520, 565, "Spawn: " + String.format("%.1f", spawnRate));
+
+    StdDraw.text(50, 575, "Health: " + health);
+    StdDraw.text(50, 555, "Ammo: " + ammo);
+
+    StdDraw.text(550, 575, "Score: " + score);
+    StdDraw.text(550, 555, "Spawn: " + String.format("%.1f", spawnRate));
 }

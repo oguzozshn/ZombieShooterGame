@@ -7,6 +7,7 @@ public class AmmoBox {
     private int hitboxWidth;
     private int hitboxHeight;
     private Random rand = new Random();
+    private String imagePath;
 
     public AmmoBox(int startX, int startY) {
         x = startX;
@@ -14,6 +15,7 @@ public class AmmoBox {
         speed = 1.0;
         hitboxWidth = 30;
         hitboxHeight = 30;
+        imagePath = "mana.png";
     }
 
     public int getX() {
@@ -54,5 +56,9 @@ public class AmmoBox {
 
     public int getAmmoAmount() {
         return rand.nextInt(5) + 1; // 1-5 arası rastgele
+    }
+
+    public void draw(){
+        StdDraw.picture(this.getX(), this.getY(), "./mana.png", 30, 30);
     }
 }

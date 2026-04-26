@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Random;
 
 public class HealthBox {
@@ -57,5 +58,13 @@ public class HealthBox {
 
     public int getHealthAmount() {
         return 1; // Her kutudan 1 can
+    }
+
+    public void draw(){
+        StdDraw.setPenColor(StdDraw.RED);
+        StdDraw.filledSquare(this.getX(), this.getY(), 15);
+        StdDraw.setPenColor(StdDraw.WHITE);
+        StdDraw.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 14));
+        StdDraw.text(this.getX(), this.getY(), "❤");
     }
 }

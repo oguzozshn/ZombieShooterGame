@@ -14,7 +14,7 @@ public class Zombie {
     public Zombie(){
         speed = 1.0;
         x = rand.nextInt(600);
-        y = 600;
+        y = 500;
         imagePath = "./zombie.png";
         direction = "right";
         hitboxWidth = 50;
@@ -74,5 +74,9 @@ public class Zombie {
 
     public double getBottomRightCornerY() {
         return y - hitboxHeight / 2.0;
+    }
+
+    public void draw(){
+        StdDraw.picture(this.getX(), this.getY(), this.getImagePath(), 50, 50);
     }
 }
